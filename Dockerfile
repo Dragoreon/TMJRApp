@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 EXPOSE 80
 
-CMD ["sh scripts/deploy.sh"]
+CMD ["sh scripts/deploy-api.sh & sh scripts/deploy-bot.sh"]
