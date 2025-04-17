@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+     - "8000:80"
+    volumes:
+     - .:/api
+    environment:
+      - SUPABASE_SUPAFAST_URL=${SUPABASE_SUPAFAST_URL}
+      - SUPABASE_SUPAFAST_KEY=${SUPABASE_SUPAFAST_KEY}
+
+  bot:
+    build: .
+    volumes:
+     - .:/bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    depends_on:
+      - api
+    
