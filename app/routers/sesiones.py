@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 main_table = Table.SESION.value
-detail_query = f'id, numero, fecha, {Table.AVENTURA.value}!inner(id, lugar, abierta_inscripcion, {Table.PREMISA.value}!inner(titulo, sistema, id_master, descripcion, aviso_contenido))'
+detail_query = f'id, numero, fecha, {Table.AVENTURA.value}!inner(id, lugar, abierta_inscripcion, {Table.PREMISA.value}!inner(titulo, sistema, aviso_contenido))'
+full_query = f'id, numero, fecha, {Table.AVENTURA.value}!inner(id, lugar, abierta_inscripcion, plazas_ocupadas, plazas_sin_reserva, plazas_totales, {Table.SESION.value}(numero, fecha), {Table.PREMISA.value}!inner(titulo, sistema, {Table.USUARIA.value}!inner(telegram_id), descripcion, aviso_contenido))'
 
 def check_limits(limit: int, offset: int):
     if limit > 100:
@@ -62,7 +63,13 @@ async def borrar_sesion(id: int):
     return f"{main_table} se ha borrado"
 
 @router.get("/sesion/{id}")
-async def leer_sesion(id: int):
-    sesion = get(id, main_table)
-    if is_empty(sesion): not_found()
-    return Sesion(**sesion.data[0])
+async def leer_sesion(id: int, details: bool = False):
+    query = full_query if details else detail_query
+    try:
+        sanitized_id = int(id)
+        response = supabase.table(main_table).select(query).eq("id", sanitized_id).execute()
+        return response
+    except ValueError:
+        raise HTTPException(status_code=400, detail="El id debe ser un número entero")
+    except Exception as error:
+        raise HTTPException (status_code=500, detail="Ocurrió un error")

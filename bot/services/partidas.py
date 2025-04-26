@@ -9,25 +9,27 @@ API_BASE_URL = os.getenv('API_BASE_URL')
 
 logger = logging.getLogger(__name__)
 
-# Métodos crud para partidas
-def process_response(response : Response, error_message="Error en la solicitud"):
-    """Procesa la respuesta de la API."""
+def api_request(method: str, endpoint: str, data=None):
+    """Realiza una solicitud a la API y maneja la respuesta."""
+    url = f"{API_BASE_URL}/{endpoint}"
+    response = requests.request(method, url, json=data)
+    logging.info(f"Response obj: {response}")
     if response.ok:
         return response.json()['data']
     else:
-        raise Exception(f"{error_message}: {response.status_code}")
+        raise Exception(f"Error en la solicitud: {response.status_code}")
 
+# Métodos crud para partidas
 def get_partidas(details: bool = False, soon: bool = False):
-    """Obtiene la lista de partidas con todos los detalles de la aventura."""
-    url = f"{API_BASE_URL}/sesion?details={details}&soon={soon}"
-    response = requests.get(url)
-    logging.info(f"Response obj: {response}")
-    return process_response(response, "Error al obtener partidas")
+    endpoint = f"sesion?details={details}&soon={soon}"
+    return api_request("GET", endpoint)
 
 def get_partidas_week(details: bool = False):
     """Lista de partidas de la semana."""
-    url = f"{API_BASE_URL}/sesion/this-week?details={details}"
-    response = requests.get(url)
-    logging.info(f"Response obj: {response}")
-    return process_response(response, "Error al obtener partidas")
+    endpoint = f"sesion/this-week?details={details}"
+    return api_request("GET", endpoint)
 
+def get_partida(id:int, details: bool = False):
+    endpoint = f"sesion/{id}?details={details}"
+    return api_request("GET", endpoint)
+    
