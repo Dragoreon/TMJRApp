@@ -1,6 +1,4 @@
 from fastapi import HTTPException, APIRouter
-from supabase import create_client, Client
-from dotenv import load_dotenv
 from models.usuaria import Usuaria, UsuariaUpdate, random_user_gender
 from .base import *
 

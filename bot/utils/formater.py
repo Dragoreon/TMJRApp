@@ -9,7 +9,7 @@ def italic(text: str) -> str:
     """
     Format text in italic.
     """
-    return f"__{text}__"
+    return f"<em>{text}<em>"
 
 
 def strike(text: str) -> str:
