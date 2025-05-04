@@ -12,3 +12,10 @@ AVENTURA_DEFAULT = {
     "plazas_sin_reserva": 1,
     "Sesion": [{"numero": 1, "fecha": None}],
 }
+
+
+def plazas_disponibles(aventura):
+    plazas_totales = int(aventura["plazas_totales"])
+    plazas_ocupadas = int(aventura["plazas_ocupadas"])
+    plazas_sin_reserva = int(aventura["plazas_sin_reserva"])
+    return plazas_totales - plazas_ocupadas - plazas_sin_reserva

@@ -1,19 +1,9 @@
-class State:
-    def __init__(self, number, text):
-        self.value = {"num": number, "text": text}
-
-    @property
-    def num(self):
-        return self.value["num"]
-
-    @property
-    def text(self):
-        return self.value["text"]
+from enum import Enum
 
 
-class States:
-    MAIN_MENU = State(1, "main_menu")
-    PARTIDA_LISTA = State(2, "partida_lista")
-    PARTIDA_DETALLES = State(3, "partida_detalles")
-    PARTIDA_CREAR = State(4, "partida_crear")
-    PARTIDA_UNIRSE = State(5, "partida_unirse")
+class States(Enum):
+    MAIN_MENU = 1
+    PARTIDA_LISTA = 2
+    PARTIDA_DETALLES = 3
+    PARTIDA_CREAR = 4
+    PARTIDA_UNIRSE = 5
