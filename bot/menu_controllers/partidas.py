@@ -1,7 +1,11 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 from config.states import States
-from handlers.partida import partida_detalle, partida_unirse, lista as partida_lista
+from handlers.partida import (
+    partida_detalle,
+    partida_unirse,
+    partida_lista as partida_lista,
+)
 from menu_controllers.basic_options import desconocido
 
 

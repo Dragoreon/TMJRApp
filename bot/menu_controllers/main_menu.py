@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from config.states import States
 from config.settings import logger
-from handlers.partida import lista
+from handlers.partida import partida_lista
 from handlers.aventura import dirigir
 from views.start import start
 from menu_controllers.basic_options import desconocido
@@ -15,7 +15,7 @@ async def main_menu(update: Update, context: CallbackContext) -> int:
         case States.MAIN_MENU.name:
             return await start(update, context)
         case States.PARTIDA_LISTA.name:
-            return await lista(update, context)
+            return await partida_lista(update, context)
         case States.PARTIDA_CREAR.name:
             return await dirigir(update, context)
         case _:
