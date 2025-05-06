@@ -64,7 +64,7 @@ async def dirigir(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             new_button("Sí (No disponible por ahora)", "dirigir_get_premisa"),
-            new_button("No", "dirigir_titulo"),
+            new_button("No", States.PARTIDA_CREAR_TITULO.value),
         ],
     ]
     await query.edit_message_text(

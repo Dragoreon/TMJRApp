@@ -8,9 +8,11 @@ async def desconocido(update: Update, context: CallbackContext) -> int:
         text="Opción desconocida",
         reply_markup=InlineKeyboardMarkup(
             [
-                InlineKeyboardButton(
-                    "Volver al menú", callback_data=States.MAIN_MENU.name
-                )
+                [
+                    InlineKeyboardButton(
+                        "Volver al menú", callback_data=States.MAIN_MENU.name
+                    )
+                ]
             ]
         ),
     )

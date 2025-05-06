@@ -1,9 +1,12 @@
-from enum import Enum
+from enum import Enum, auto, unique
 
 
+@unique
 class States(Enum):
-    MAIN_MENU = 1
-    PARTIDA_LISTA = 2
-    PARTIDA_DETALLES = 3
-    PARTIDA_CREAR = 4
-    PARTIDA_UNIRSE = 5
+    MAIN_MENU = auto()
+    PARTIDA_LISTA = auto()
+    PARTIDA_DETALLES = auto()
+    PARTIDA_UNIRSE = auto()
+    PARTIDA_CREAR = auto()
+    PARTIDA_CREAR_TITULO = auto()
+    PARTIDA_CREAR_SISTEMA = auto()

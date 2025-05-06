@@ -88,6 +88,7 @@ async def partida_detalle(update: Update, context: CallbackContext) -> int:
             [new_button("Apuntarse", States.PARTIDA_UNIRSE.name)],
             [new_button("Volver a la lista", States.PARTIDA_LISTA.name)],
         ]
+        logger.info(keyboard)
         await query.message.reply_text(
             "¿Quieres apuntarte?",
             reply_markup=InlineKeyboardMarkup(keyboard),
