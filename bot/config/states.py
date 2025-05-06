@@ -10,3 +10,4 @@ class States(Enum):
     PARTIDA_CREAR = auto()
     PARTIDA_CREAR_TITULO = auto()
     PARTIDA_CREAR_SISTEMA = auto()
+    PARTIDA_CREAR_PREMISA = auto()
