@@ -1,4 +1,4 @@
-from format import SL
+from constants.strings.format import SL
 
 # TODO meter aquí el texto
 # Lista
@@ -13,6 +13,8 @@ CARGANDO_DETALLES = "Cargando detalles de la partida..."
 ERROR_DETALLES = "Error al obtener detalles de la partida"
 
 # Crear
+CARGANDO_LISTA_ANTERIOR = "Cargando partidas dirigidas anteriormente..."
+DIRIGIDO_LISTA = "Estas son las aventuras que has dirigido antess"
 CREAR_INICIO = (
     "Tengo que saber algunas cosas antes de empezar."
     + SL

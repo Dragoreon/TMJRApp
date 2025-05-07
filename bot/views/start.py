@@ -11,11 +11,7 @@ async def start(update: Update, context: CallbackContext) -> int:
                 "Ver próximas partidas", callback_data=States.PARTIDA_LISTA.name
             )
         ],
-        [
-            InlineKeyboardButton(
-                "Dirigir partida", callback_data=States.PARTIDA_CREAR.name
-            )
-        ],
+        [InlineKeyboardButton("Dirigir partida", callback_data=States.DIRIGIR.name)],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     logger.info("Iniciando bot")

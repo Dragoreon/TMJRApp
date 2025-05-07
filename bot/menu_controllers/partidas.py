@@ -1,11 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 from config.states import States
-from handlers.partida import (
-    partida_detalle,
-    partida_unirse,
-    partida_lista as partida_lista,
-)
+from handlers.partida import *
 from menu_controllers.basic_options import desconocido
 
 
@@ -25,6 +21,18 @@ async def detalles(update: Update, context: CallbackContext) -> int:
     match query.data:
         case States.PARTIDA_UNIRSE.name:
             return await partida_unirse(update, CallbackContext)
+        case States.PARTIDA_LISTA.name:
+            return await partida_lista(update, CallbackContext)
+        case _:
+            return await desconocido(update, context)
+
+
+async def crear(update: Update, context: CallbackContext) -> int:
+    # Crear partida
+    query = update.callback_query
+    match query.data:
+        case States.DIRIGIR_GET_PREMISA.name:
+            return await partida_crear_get_premisa(update, CallbackContext)
         case States.PARTIDA_LISTA.name:
             return await partida_lista(update, CallbackContext)
         case _:

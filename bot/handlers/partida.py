@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from services import partidas as ses
+from services import partidas as ses, premisas as pre
 from config.settings import logger
 from config.states import States
 from constants.enums.tables import TableName as tn
@@ -45,6 +45,23 @@ async def partida_detalle(update: Update, context: CallbackContext) -> int:
     except Exception as e:
         await error(query, ERROR_DETALLES, e)
     return States.PARTIDA_DETALLES.value
+
+
+async def partida_crear_premisa_lista(update: Update, context: CallbackContext) -> int:
+    logger.info("Lista de partidas dirigidas")
+    query = update.callback_query
+    await mensaje(query, CARGANDO_LISTA_ANTERIOR)
+    try:
+        premisas = pre.get_premisas()
+        logger.info(f"Cargadas: {premisas.size}")
+        if not premisas:
+            await mensaje(query, NOT_FOUND)
+            # Aquí cargar botón de vuelta
+        else:
+            await crear_premisa_lista(query, premisas)
+    except Exception as e:
+        await error(query, ERROR_LISTA, e)
+    return States.DIRIGIR_PREMISA_LISTA.value
 
 
 async def partida_unirse(update: Update, context: CallbackContext) -> int:

@@ -16,7 +16,7 @@ async def main_menu(update: Update, context: CallbackContext) -> int:
             return await start(update, context)
         case States.PARTIDA_LISTA.name:
             return await partida_lista(update, context)
-        case States.PARTIDA_CREAR.name:
+        case States.DIRIGIR.name:
             return await dirigir_inicio(update, context)
         case _:
             return await desconocido(update, context)

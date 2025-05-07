@@ -53,4 +53,4 @@ async def dirigir_inicio(update: Update, context: CallbackContext) -> None:
     logger.info(f"{update.effective_user.username} quiere dirigir")
     # TODO: Empezar a guardar cosas en caché?
     await crear_inicio(update.callback_query)
-    return States.PARTIDA_CREAR
+    return States.DIRIGIR
