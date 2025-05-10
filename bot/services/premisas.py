@@ -1,4 +1,4 @@
-from common import api_request, Methods
+from services.common import api_request, Methods
 
 
 def get_premisas():

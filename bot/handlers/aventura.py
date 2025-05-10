@@ -2,55 +2,44 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from config.settings import logger
 from config.states import States
-from constants.strings.partidas import *
-from utils.formater import *
-from views.partidas.crear import crear_inicio
-
-
-async def dirigir_titulo(update: Update, context: CallbackContext) -> None:
-    logger.info("Sacar título")
-    query = update.callback_query
-    # Recoger título
-    # TODO: ni idea de cómo hacer esto
-    # await query.edit_message_reply_markup(text="¿Título de la aventura?")
-    # titulo = update.message.text
-    # logger.info("Titulo " + titulo)
-    # if not titulo:
-    #     await query.message.reply_text("No has introducido un título")
-
-
-async def dirigir_get_premisa(update: Update, context: CallbackContext) -> None:
-    # Si ha dirigido antes, buscar en la base de datos
-    query = update.callback_query
-    logger.info("Get premisa")
-    await query.edit_message_text(text="Cargando aventuras dirigidas...")
-    # try:
-    #     premisas = ave.get_premisas_by_user(query.from_user.id)
-    #     if premisas:
-    #         keyboard = []
-    #         for premisa in premisas:
-    #             aventura = premisa["Premisa"]
-    #             title = f"{premisa['titulo']}, {premisa['sistema']}\n"
-    #             keyboard.append(
-    #                 [new_button(title, f"partida_detalle_{aventura['id']}")]
-    #             )
-    #         await query.edit_message_text(
-    #             "Estas son las aventuras que has dirigido",
-    #             reply_markup=InlineKeyboardMarkup(keyboard),
-    #         )
-    #     else:
-    #         await query.message.reply_text(
-    #             "No he encontrado aventuras dirigidas por ti."
-    #             + SL
-    #             + "Vamos a crear una nueva."
-    #         )
-    #         # await titulo(update, context)
-    # except Exception as e:
-    #     await query.message.reply_text(f"Error al obtener aventuras: {e}")
+from constants.strings.aventuras import *
+from services.premisas import get_premisas
+from views.aventuras.crear import dirigir_inicio_view
+from views.premisas.leer import premisa_lista_view
+from views.basic import mensaje_view, error_view
 
 
 async def dirigir_inicio(update: Update, context: CallbackContext) -> None:
     logger.info(f"{update.effective_user.username} quiere dirigir")
     # TODO: Empezar a guardar cosas en caché?
-    await crear_inicio(update.callback_query)
+    await dirigir_inicio_view(update.callback_query)
     return States.DIRIGIR
+
+
+async def dirigir_titulo(update: Update, context: CallbackContext) -> None:
+    logger.info("Escribir el título de la partida")
+    query = update.callback_query
+    await mensaje_view(query, CREAR_TITULO)
+    try:
+        # Aquí hacer que saque el texto que se escriba.
+        await mensaje_view(query, "En proceso")
+    except Exception as e:
+        await error_view(query, ERROR_AVE, e)
+
+
+async def dirigir_get_premisa(update: Update, context: CallbackContext) -> None:
+    # Si ha dirigido antes, buscar en la base de datos
+    logger.info("Lista de partidas dirigidas")
+    query = update.callback_query
+    await mensaje_view(query, CARGANDO_LISTA_DIRIGIDAS)
+    try:
+        premisas = get_premisas()
+        logger.info(f"Cargadas: {premisas.size}")
+        if not premisas:
+            await mensaje_view(query, NOT_FOUND)
+            # Aquí cargar botón de vuelta
+        else:
+            await premisa_lista_view(query, premisas)
+    except Exception as e:
+        await error_view(query, ERROR_LISTA, e)
+    return States.DIRIGIR_PREMISA_LISTA.value

@@ -1,4 +1,4 @@
-from common import api_request
+from services.common import api_request
 
 
 # Métodos crud para partidas

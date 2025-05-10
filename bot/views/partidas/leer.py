@@ -6,7 +6,7 @@ from config.settings import logger
 from config.states import States
 from utils.formater import *
 from datetime import datetime
-from handlers.basic_operations import new_button
+from views.basic import new_button
 from schemas.aventura import plazas_disponibles
 from telegram import CallbackQuery
 from telegram import (
@@ -38,7 +38,7 @@ def partida_descripcion(sesion) -> str:
     return text
 
 
-async def detalle(query: CallbackQuery, sesion):
+async def detalle_view(query: CallbackQuery, sesion):
     logger.info("vista detalle")
     descripcion = partida_descripcion(sesion)
     logger.info("vista detalle")
@@ -55,7 +55,7 @@ async def detalle(query: CallbackQuery, sesion):
     )
 
 
-async def lista(query: CallbackQuery, titles: list[str]):
+async def lista_view(query: CallbackQuery, titles: list[str]):
     # TODO: Guardar sesion['id'] en caché al pulsar el botón? cómo?
     keyboard = [[new_button(title, States.PARTIDA_DETALLES.name)] for title in titles]
     await query.edit_message_text(

@@ -25,15 +25,3 @@ async def detalles(update: Update, context: CallbackContext) -> int:
             return await partida_lista(update, CallbackContext)
         case _:
             return await desconocido(update, context)
-
-
-async def crear(update: Update, context: CallbackContext) -> int:
-    # Crear partida
-    query = update.callback_query
-    match query.data:
-        case States.DIRIGIR_GET_PREMISA.name:
-            return await partida_crear_get_premisa(update, CallbackContext)
-        case States.PARTIDA_LISTA.name:
-            return await partida_lista(update, CallbackContext)
-        case _:
-            return await desconocido(update, context)

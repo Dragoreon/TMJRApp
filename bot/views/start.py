@@ -4,7 +4,7 @@ from config.states import States
 from config.settings import logger
 
 
-async def start(update: Update, context: CallbackContext) -> int:
+async def start_view(update: Update, context: CallbackContext) -> int:
     keyboard = [
         [
             InlineKeyboardButton(
