@@ -4,7 +4,7 @@ from telegram.ext import (
     ConversationHandler,
 )
 from config.settings import TOKEN
-from menu_controllers.menu_states import MENU_STATES
+from menus.menu_states import MENU_STATES
 from views.start import start_view
 
 

@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 from config.states import States
-from handlers.aventura import *
-from menu_controllers.basic_options import desconocido
+from controllers.aventura import *
+from menus.basic_options import desconocido
 
 
 async def crear(update: Update, context: CallbackContext) -> int:
