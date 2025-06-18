@@ -1,5 +1,3 @@
-# import uvicorn
-# import logging
 import routers.usuarias as usr
 import routers.premisas as pre
 import routers.aventuras as avn
@@ -10,7 +8,6 @@ import routers.esperas as esp
 from fastapi import FastAPI
 
 app = FastAPI()
-# logger = logging.getLogger('uvicorn.error')
 
 app.include_router(usr.router)
 app.include_router(pre.router)

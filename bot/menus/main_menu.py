@@ -4,7 +4,7 @@ from config.states import States
 from config.settings import logger
 from controllers.partida import partida_lista
 from controllers.aventura import dirigir_inicio
-from views.start import start
+from views.start import start_view
 from menus.basic_options import desconocido
 
 
@@ -13,7 +13,7 @@ async def main_menu(update: Update, context: CallbackContext) -> int:
     query = update.callback_query
     match query.data:
         case States.MAIN_MENU.name:
-            return await start(update, context)
+            return await start_view(update, context)
         case States.PARTIDA_LISTA.name:
             return await partida_lista(update, context)
         case States.DIRIGIR.name:
