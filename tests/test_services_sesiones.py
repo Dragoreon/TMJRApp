@@ -1,7 +1,7 @@
 """Unit tests del servicio de sesiones: crear, apuntar, plazas, errores."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import datetime
 
 import pytest
 
@@ -35,7 +35,8 @@ async def test_crear_sesion_minima(session):
     id_dm = await _persona_dm(session, 1)
     id_juego = await _juego(session, "JuegoMin")
     s = await svc.crear_sesion(
-        session, id_dm=id_dm, id_juego=id_juego, fecha=date(2030, 1, 4)
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 1, 4, 18, 0),
     )
     assert s.id is not None
     assert s.id_dm == id_dm
@@ -52,7 +53,7 @@ async def test_crear_sesion_con_overrides(session):
         session,
         id_dm=id_dm,
         id_juego=id_juego,
-        fecha=date(2030, 1, 11),
+        fecha=datetime(2030, 1, 11, 18, 0),
         plazas_totales=3,
         plazas_sin_reserva=0,
         descripcion="Aviso: traer dados de 6",
@@ -71,7 +72,8 @@ async def test_apuntar_pj_camino_feliz(session):
     id_pj = await _persona_pj(session, 11, "PJ-1")
     id_juego = await _juego(session, "Juego10")
     s = await svc.crear_sesion(
-        session, id_dm=id_dm, id_juego=id_juego, fecha=date(2030, 2, 1)
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 2, 1, 18, 0),
     )
 
     sp = await svc.apuntar_pj(session, sesion_id=s.id, pj_id=id_pj)
@@ -86,7 +88,8 @@ async def test_apuntar_pj_dos_veces_falla(session):
     id_pj = await _persona_pj(session, 21, "PJ-2")
     id_juego = await _juego(session, "Juego20")
     s = await svc.crear_sesion(
-        session, id_dm=id_dm, id_juego=id_juego, fecha=date(2030, 2, 8)
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 2, 8, 18, 0),
     )
 
     await svc.apuntar_pj(session, sesion_id=s.id, pj_id=id_pj)
@@ -104,7 +107,8 @@ async def test_apuntar_pj_inexistente(session):
     id_dm = await _persona_dm(session, 40)
     id_juego = await _juego(session, "Juego40")
     s = await svc.crear_sesion(
-        session, id_dm=id_dm, id_juego=id_juego, fecha=date(2030, 2, 15)
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 2, 15, 18, 0),
     )
     with pytest.raises(ValueError, match="PJ"):
         await svc.apuntar_pj(session, sesion_id=s.id, pj_id=9999)
@@ -115,7 +119,7 @@ async def test_sesion_llena_sin_acompanantes(session):
     id_juego = await _juego(session, "Juego50")
     s = await svc.crear_sesion(
         session, id_dm=id_dm, id_juego=id_juego,
-        fecha=date(2030, 3, 1), plazas_totales=2,
+        fecha=datetime(2030, 3, 1, 18, 0), plazas_totales=2,
     )
     pj1 = await _persona_pj(session, 51, "P1")
     pj2 = await _persona_pj(session, 52, "P2")
@@ -132,7 +136,7 @@ async def test_acompanantes_cuentan_para_plazas(session):
     id_juego = await _juego(session, "Juego60")
     s = await svc.crear_sesion(
         session, id_dm=id_dm, id_juego=id_juego,
-        fecha=date(2030, 3, 8), plazas_totales=3,
+        fecha=datetime(2030, 3, 8, 18, 0), plazas_totales=3,
     )
     pj1 = await _persona_pj(session, 61, "Q1")
     pj2 = await _persona_pj(session, 62, "Q2")
@@ -147,12 +151,213 @@ async def test_acompanantes_cuentan_para_plazas(session):
         await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj3)
 
 
+async def test_list_sesiones_for_dm_filtra_por_dm_y_futuras(session):
+    id_dm_a = await _persona_dm(session, 200)
+    id_dm_b = await _persona_dm(session, 201, "DM-B")
+    id_juego = await _juego(session, "JuegoDMlist")
+
+    # 1 sesión futura del DM-A, 1 pasada del DM-A, 1 del DM-B
+    await svc.crear_sesion(
+        session, id_dm=id_dm_a, id_juego=id_juego,
+        fecha=datetime(2030, 6, 1, 18, 0),
+    )
+    await svc.crear_sesion(
+        session, id_dm=id_dm_a, id_juego=id_juego,
+        fecha=datetime(2020, 1, 1, 18, 0),     # pasada
+    )
+    await svc.crear_sesion(
+        session, id_dm=id_dm_b, id_juego=id_juego,
+        fecha=datetime(2030, 6, 2, 18, 0),
+    )
+
+    futuras = await svc.list_sesiones_for_dm(session, id_dm_a, only_future=True)
+    assert len(futuras) == 1
+    assert futuras[0].fecha == datetime(2030, 6, 1, 18, 0)
+
+    todas = await svc.list_sesiones_for_dm(session, id_dm_a, only_future=False)
+    assert len(todas) == 2
+
+
+async def test_update_sesion_aplica_y_valida_plazas(session):
+    id_dm = await _persona_dm(session, 210)
+    id_juego = await _juego(session, "JuegoUpd")
+    s = await svc.crear_sesion(
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 7, 1, 18, 0), plazas_totales=4,
+    )
+
+    # Cambios simples
+    s2 = await svc.update_sesion(
+        session, s, nombre="Nuevo nombre", lugar="Online"
+    )
+    assert s2.nombre == "Nuevo nombre"
+    assert s2.lugar == "Online"
+
+    # Apuntar 2 PJs y luego intentar bajar plazas a 1 → falla
+    pj1 = await _persona_pj(session, 211, "PA1")
+    pj2 = await _persona_pj(session, 212, "PA2")
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj1)
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj2)
+
+    with pytest.raises(ValueError, match="ocupadas"):
+        await svc.update_sesion(session, s, plazas_totales=1)
+
+    # Subir plazas sí
+    s3 = await svc.update_sesion(session, s, plazas_totales=6)
+    assert s3.plazas_totales == 6
+
+
+async def test_invitados_add_remove_y_borrar_sesion_limpia(session):
+    """add_invitado / remove_ultimo_invitado (LIFO) y limpieza al borrar sesión."""
+    from sqlalchemy import select
+    from tmjr.db.models import PJ, Sesion, SesionPJ
+
+    id_dm = await _persona_dm(session, 400)
+    id_juego = await _juego(session, "JuegoInv")
+    s = await svc.crear_sesion(
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 9, 15, 18, 0), plazas_totales=4,
+    )
+    anfitrion = await _persona_pj(session, 401, "Anfitrion")
+
+    # Apuntar al anfitrión.
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=anfitrion)
+
+    # Añadir 2 invitados.
+    inv1 = await svc.add_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+        anfitrion_nombre_visible="Alvaro",
+    )
+    inv2 = await svc.add_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+        anfitrion_nombre_visible="Alvaro",
+    )
+    assert inv1.nombre == "Invitado-Alvaro"
+    assert inv1.id_anfitrion == anfitrion
+    assert inv2.id_anfitrion == anfitrion
+
+    # 4ª plaza: aún cabe; 5ª: explota con SesionLlenaError (anfitrion + 2 inv = 3, 1 plaza libre).
+    await svc.add_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+        anfitrion_nombre_visible="Alvaro",
+    )
+    with pytest.raises(svc.SesionLlenaError):
+        await svc.add_invitado(
+            session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+            anfitrion_nombre_visible="Alvaro",
+        )
+
+    # remove_ultimo_invitado: LIFO → quita el último creado.
+    assert await svc.remove_ultimo_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion
+    ) is True
+    apuntados = (
+        await session.execute(
+            select(PJ.nombre)
+            .join(SesionPJ, SesionPJ.id_pj == PJ.id)
+            .where(SesionPJ.id_sesion == s.id)
+            .where(PJ.id_anfitrion == anfitrion)
+        )
+    ).scalars().all()
+    assert len(apuntados) == 2  # quedaban 3, ahora 2
+
+    # Borrar sesión: limpia los 2 invitados restantes.
+    await svc.borrar_sesion(session, s)
+    assert await session.get(Sesion, s.id) is None
+    invitados_huerfanos = (
+        await session.execute(
+            select(PJ).where(PJ.id_anfitrion == anfitrion)
+        )
+    ).scalars().all()
+    assert invitados_huerfanos == []
+
+
+async def test_nombre_pjs_en_sesion_mezcla_normales_e_invitados(session):
+    """Devuelve nombres en orden de apuntada_en; invitados truncados a 20 chars."""
+    id_dm = await _persona_dm(session, 420)
+    id_juego = await _juego(session, "JuegoNombres")
+    s = await svc.crear_sesion(
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 9, 17, 18, 0), plazas_totales=5,
+    )
+
+    pj_normal = await _persona_pj(session, 421, "Marta")
+    anfitrion = await _persona_pj(session, 422, "Alvaro")
+
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj_normal)
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=anfitrion)
+    # Invitado con nombre corto: cabe entero.
+    await svc.add_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+        anfitrion_nombre_visible="Alvaro",
+    )
+    # Invitado con nombre largo: debe truncarse a 20 chars en la lista.
+    await svc.add_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=anfitrion,
+        anfitrion_nombre_visible="NombreLarguisimoQueSeTrunca",
+    )
+
+    nombres = await svc.nombre_pjs_en_sesion(session, s.id)
+    assert nombres == [
+        "Marta",            # PJ normal: nombre de la Persona
+        "Alvaro",           # anfitrión: nombre de la Persona
+        "Invitado-Alvaro",  # invitado corto, sin truncar
+        "Invitado-NombreLargu",  # invitado truncado a 20 chars totales
+    ]
+    assert len(nombres[3]) == 20
+
+
+async def test_remove_ultimo_invitado_sin_invitados_devuelve_false(session):
+    id_dm = await _persona_dm(session, 410)
+    id_juego = await _juego(session, "JuegoInv2")
+    s = await svc.crear_sesion(
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 9, 16, 18, 0),
+    )
+    pj = await _persona_pj(session, 411, "SinInvi")
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj)
+    assert await svc.remove_ultimo_invitado(
+        session, sesion_id=s.id, anfitrion_pj_id=pj
+    ) is False
+
+
+async def test_borrar_sesion_y_apuntados_telegram(session):
+    """Verifica apuntados_telegram + borrar_sesion (cascada a sesion_pj)."""
+    from sqlalchemy import select
+    from tmjr.db.models import Sesion, SesionPJ
+
+    id_dm = await _persona_dm(session, 300)
+    id_juego = await _juego(session, "JuegoBorrar")
+    s = await svc.crear_sesion(
+        session, id_dm=id_dm, id_juego=id_juego,
+        fecha=datetime(2030, 8, 1, 18, 0),
+    )
+
+    # Apuntar 2 PJs (conocemos sus telegram_id porque _persona_pj los crea).
+    pj1 = await _persona_pj(session, 301, "PB1")
+    pj2 = await _persona_pj(session, 302, "PB2")
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj1)
+    await svc.apuntar_pj(session, sesion_id=s.id, pj_id=pj2)
+
+    # apuntados_telegram devuelve los telegram_ids con el nombre del PJ.
+    telegrams = await svc.apuntados_telegram(session, s.id)
+    assert sorted(telegrams) == sorted([(301, "PB1"), (302, "PB2")])
+
+    # borrar_sesion elimina la fila + las dependencias.
+    await svc.borrar_sesion(session, s)
+    assert await session.get(Sesion, s.id) is None
+    rows = (
+        await session.execute(select(SesionPJ).where(SesionPJ.id_sesion == s.id))
+    ).all()
+    assert rows == []
+
+
 async def test_plazas_ocupadas_calculo(session):
     id_dm = await _persona_dm(session, 70)
     id_juego = await _juego(session, "Juego70")
     s = await svc.crear_sesion(
         session, id_dm=id_dm, id_juego=id_juego,
-        fecha=date(2030, 3, 15), plazas_totales=6,
+        fecha=datetime(2030, 3, 15, 18, 0), plazas_totales=6,
     )
     pj1 = await _persona_pj(session, 71, "R1")
     pj2 = await _persona_pj(session, 72, "R2")
